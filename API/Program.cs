@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Domain;
 
 namespace API
 {
@@ -24,8 +26,9 @@ namespace API
             try
             {
                     var context = services.GetRequiredService<DataContext>();
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
                     await context.Database.MigrateAsync(); //создается бд (если не существует) при запуске приложения
-                    await Seed.SeedData(context);
+                    await Seed.SeedData(context, userManager);
             }
             catch(Exception ex)
             {
