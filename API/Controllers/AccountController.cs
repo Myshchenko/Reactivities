@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading.Tasks;
 using API.DTOs;
 using API.Services;
 using Domain;
@@ -15,11 +16,13 @@ namespace API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly TokenService _tokenService;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-                                    TokenService tokenService)
+        private readonly SignInManager<AppUser> _signInManager;
+
+        private readonly TokenService _tokenService;
+        
+        public AccountController(UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager, TokenService tokenService)
         {
             _tokenService = tokenService;
             _signInManager = signInManager;
@@ -27,13 +30,13 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDTO>> Login(LoginDTOs loginDTO)
+        public async Task<ActionResult<UserDTO>> Login(LoginDTOs loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDTO.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user == null) return Unauthorized();
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (result.Succeeded)
             {
@@ -44,37 +47,34 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<UserDTO>> Register(RegisterDTO registerDTO)
+        public async Task<ActionResult<UserDTO>> Register(RegisterDTO registerDto)
         {
-            if (await _userManager.Users.AnyAsync(x => x.Email == registerDTO.Email))
+            if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
             {
-                ModelState.AddModelError("email", "Email taken.");
-
+                ModelState.AddModelError("email", "Email taken");
                 return ValidationProblem();
             }
-
-            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDTO.UserName))
+            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username))
             {
-                ModelState.AddModelError("username", "Username taken.");
-
+                ModelState.AddModelError("username", "Username taken");
                 return ValidationProblem();
             }
 
             var user = new AppUser
             {
-                DisplayName = registerDTO.DisplayName,
-                Email = registerDTO.Email,
-                UserName = registerDTO.UserName
+                DisplayName = registerDto.DisplayName,
+                Email = registerDto.Email,
+                UserName = registerDto.Username
             };
 
-            var result = await _userManager.CreateAsync(user, registerDTO.Password);
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
 
             if (result.Succeeded)
             {
                 return CreateUserObject(user);
             }
 
-            return BadRequest("Problem registring user");
+            return BadRequest("Problem registering user");
         }
 
         [Authorize]
@@ -93,9 +93,8 @@ namespace API.Controllers
                 DisplayName = user.DisplayName,
                 Image = null,
                 Token = _tokenService.CreateToken(user),
-                USerName = user.UserName
+                Username = user.UserName
             };
         }
-
     }
 }

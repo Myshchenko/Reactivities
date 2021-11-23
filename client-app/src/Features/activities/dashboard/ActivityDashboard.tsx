@@ -6,24 +6,23 @@ import { useStore } from "../../../App/stores/store";
 import ActivityFilters from "./ActivityFilters";
 import ActivityList from "./ActivityList";
 
-export default observer( function ActivityDashboard(){
-     
-    const{activityStore} = useStore(); 
-    const{loadActivities, activityRegistry} = activityStore;                                
+export default observer(function ActivityDashboard() {
+    const {activityStore} = useStore();
+    const {loadActivities, activityRegistry} = activityStore;
 
     useEffect(() => {
-      if(activityRegistry.size <= 1) loadActivities();
+      if (activityRegistry.size <= 1) loadActivities();
     }, [activityRegistry.size, loadActivities])
   
-    if(activityStore.loadingInitial) return <LoadingComponent content='Loading activities...' />
+    if (activityStore.loadingInitial) return <LoadingComponent content='Loading activities...' />
 
-    return(
+    return (
         <Grid>
             <Grid.Column width='10'>
-                 <ActivityList/> 
+                <ActivityList />
             </Grid.Column>
-            <Grid.Column width="6">
-                <ActivityFilters/>
+            <Grid.Column width='6'>
+                <ActivityFilters />
             </Grid.Column>
         </Grid>
     )

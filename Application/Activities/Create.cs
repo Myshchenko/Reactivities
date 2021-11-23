@@ -27,11 +27,10 @@ namespace Application.Activities
             }
         }
 
-        public class Handler : IRequestHandler<Command, Result<Unit>>
+ public class Handler : IRequestHandler<Command, Result<Unit>>
         {
             private readonly DataContext _context;
             private readonly IUserAccessor _userAccessor;
-
             public Handler(DataContext context, IUserAccessor userAccessor)
             {
                 _userAccessor = userAccessor;
@@ -40,8 +39,8 @@ namespace Application.Activities
 
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
-                var user = await _context.Users.FirstOrDefaultAsync(x =>
-                                x.UserName == _userAccessor.GetUserName());
+                var user = await _context.Users.FirstOrDefaultAsync(x => 
+                    x.UserName == _userAccessor.GetUserName());
 
                 var attendee = new ActivityAttendee
                 {

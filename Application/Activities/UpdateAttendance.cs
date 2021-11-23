@@ -9,65 +9,64 @@ namespace Application.Activities
 {
     public class UpdateAttendance
     {
-        public class Command: IRequest<Result<Unit>>
+        public class Command : IRequest<Result<Unit>>
         {
             public Guid Id { get; set; }
-            
+
         }
 
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-        private readonly DataContext _context;
-        private readonly IUserAccessor _userAccessor;
+            private readonly DataContext _context;
+            private readonly IUserAccessor _userAccessor;
             public Handler(DataContext context, IUserAccessor userAccessor)
             {
-            _userAccessor = userAccessor;
-            _context = context;
-
+                _userAccessor = userAccessor;
+                _context = context;
             }
 
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var activity = await _context.Activities
-                .Include(x=>x.Attendees).ThenInclude(u => u.AppUser)
+                .Include(x => x.Attendees).ThenInclude(u => u.AppUser)
                 .SingleOrDefaultAsync(x => x.Id == request.Id);
 
-                if(activity == null) return null;
+                if (activity == null) return null;
 
-                var user = await _context.Users.FirstOrDefaultAsync(x => 
+                var user = await _context.Users.FirstOrDefaultAsync(x =>
                                 x.UserName == _userAccessor.GetUserName());
 
-                if(user == null) return null; 
+                if (user == null) return null;
 
-                var hostUserName = activity.Attendees.FirstOrDefault(y=>y.IsHost)?.AppUser?.UserName;  
+                var hostUserName = activity.Attendees.FirstOrDefault(y => y.IsHost)?.AppUser?.UserName;
 
-                 var attendence = activity.Attendees.FirstOrDefault(x => x.AppUser.UserName == user.UserName);  
+                var attendence = activity.Attendees.FirstOrDefault(x => x.AppUser.UserName == user.UserName);
 
-                 if(attendence != null && hostUserName == user.UserName)
-                 {
-                     activity.IsCancelled = !activity.IsCancelled;
-                 }       
+                if (attendence != null && hostUserName == user.UserName)
+                {
+                    activity.IsCancelled = !activity.IsCancelled;
+                }
 
-                 if(attendence != null && hostUserName != user.UserName)
-                 {
+                if (attendence != null && hostUserName != user.UserName)
+                {
                     activity.Attendees.Remove(attendence);
-                 }
+                }
 
-                 if(attendence == null)
-                 {
-                     attendence = new ActivityAttendee
-                     {  
+                if (attendence == null)
+                {
+                    attendence = new ActivityAttendee
+                    {
                         AppUser = user,
                         Activity = activity,
                         IsHost = false
-                     };
+                    };
 
-                     activity.Attendees.Add(attendence);
-                 }
+                    activity.Attendees.Add(attendence);
+                }
 
-                 var result = await _context.SaveChangesAsync() > 0;
+                var result = await _context.SaveChangesAsync() > 0;
 
-                 return result ? Result<Unit>.Success(Unit.Value) : Result<Unit>.Failure("Problem updating attendance");
+                return result ? Result<Unit>.Success(Unit.Value) : Result<Unit>.Failure("Problem updating attendance");
             }
         }
     }
