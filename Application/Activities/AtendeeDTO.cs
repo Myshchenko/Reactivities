@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Application.Profiles
+namespace Application.Activities
 {
-    public class Profile
+    public class AtendeeDTO
     {
         public string UserName { get; set; }
 
