@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Comments
 {
     public class List
     {
-         public class Query : IRequest<Result<List<CommentDTO>>>
+        public class Query : IRequest<Result<List<CommentDTO>>>
         {
             public Guid ActivityId { get; set; }
         }
@@ -21,9 +22,7 @@ namespace Application.Comments
         public class Handler : IRequestHandler<Query, Result<List<CommentDTO>>>
         {
             private readonly DataContext _context;
-
             private readonly IMapper _mapper;
-            
             public Handler(DataContext context, IMapper mapper)
             {
                 _mapper = mapper;
